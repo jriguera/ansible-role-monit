@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - role: .
+  
+#   - name: Display all variables/facts known for a host
+#     debug: var=hostvars[inventory_hostname]
+
