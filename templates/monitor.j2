@@ -1,0 +1,68 @@
+# {{ ansible_managed }}
+
+{% if item.script is defined and item.script is not none %}
+{% set item_type = 'process' %}
+{% else %}
+{% set item_type = item.type | default('process') %}
+{% endif %}
+
+{% if item_type == 'process' %}
+check process {{ item.name }} with pidfile {{ item.target }}
+{% set item_start = item.start | default({}) %}
+{% set item_stop = item.stop | default({}) %}
+{% if item.script is defined and item.script is not none %}
+{% if not item_start %}
+{% set item_start = {'script': item.script | replace('%', 'start') } %}
+{% endif %}
+{% if not item_stop %}
+{% set item_stop = {'script': item.script | replace('%', 'stop') } %}
+{% endif %}
+{% endif %}
+{% if item_start %}
+  start program = "{{ item_start.script }}"
+{% if item_start.uid is defined %}
+    as uid "{{ item_start.uid }}"
+{% endif %}
+{% if item_start.gid is defined %}
+    as gid "{{ item_start.gid }}"
+{% endif %}
+{% if item_start.timeout is defined %}
+    with timeout {{ item_start.timeout }} seconds
+{% endif %}
+{% endif %}
+{% if item_stop %}
+  stop program = "{{ item_stop.script }}"
+{% if item_stop.uid is defined %}
+    as uid "{{ item_stop.uid }}"
+{% endif %}
+{% if item_stop.gid is defined %}
+    as gid "{{ item_stop.gid }}"
+{% endif %}
+{% if item_stop.timeout is defined %}
+    with timeout {{ item_stop.timeout }} seconds
+{% endif %}
+{% endif %}
+{% if item.restart is defined and item.restart is not none %}
+  restart program = "{{ item.restart.script }}"
+{% if item.restart.uid is defined %}
+    as uid "{{ item.restart.uid }}"
+{% endif %}
+{% if item.restart.gid is defined %}
+    as gid "{{ item.restart.gid }}"
+{% endif %}
+{% if item.restart.timeout is defined %}
+    with timeout {{ item.restart.timeout }} seconds
+{% endif %}
+{% endif %}
+{% elif item_type == 'system' %}
+check system {{ monit_monitor.name }}
+{% elif item_type == 'host' %}
+check host {{ item.name }} with address {{ item.target }}
+{% elif monit_monitor.type == 'filesystem' %}
+check filesystem {{ item.name }} with path {{ item.target }}
+{% endif %}
+{% if item.rules is defined and item.rules %}
+{% for rule in item.rules %}
+  {{ rule }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,8 @@
+---
+monit_config_file: /etc/monit/monitrc
+monit_config_dir: /etc/monit/conf.d
+
+monit_packages:
+  monit:
+    state: latest
+
